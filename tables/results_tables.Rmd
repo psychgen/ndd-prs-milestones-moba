@@ -1,0 +1,92 @@
+---
+title: "Tables"
+author: "laurie"
+date: "18 september 2019"
+output: word_document
+---
+
+```{r setup, include=FALSE}
+knitr::opts_chunk$set(echo = FALSE, warning = FALSE, message = FALSE)
+knitr::opts_knit$set(root.dir =  "N:/data/durable/projects/prs_dev_timing")
+require(tidyverse)
+require(psych)
+```
+
+## Descriptives
+```{r descriptives}
+load( file = './data/prepped_00_vars.RData')
+seldata_main <- alldata %>%
+  filter(sex %in% c("Male","Female")) %>% 
+  filter(!is.na(IID))
+
+seldata_main$diff_1st_wds_sns <- seldata_main$age_1st_sns - seldata_main$age_1st_wds
+
+seldata_main <- seldata_main %>% 
+  select(sex,age_1st_wlk,bin_mot_18m,age_1st_wds,age_1st_sns,diff_1st_wds_sns,bin_lang_3yr,concern_dev_exprssd_others) %>%
+  mutate(diff_1st_wds_sns = ifelse(diff_1st_wds_sns<=0,NA,diff_1st_wds_sns))%>% droplevels()
+# seldata_supp <- alldata %>%
+#   filter(sex %in% c("Male","Female")) %>% 
+#   filter(!is.na(IID)) %>% 
+#   select(sex,evr_mot_delay,evr_mot_spec,age_1st_sns,evr_lang_delay,evr_lang_spec) %>% droplevels()
+
+a <- describeBy(seldata_main, group="sex", mat=TRUE)%>% 
+  rownames_to_column() %>% 
+  select(var= rowname, sex=group1, n, mean, sd,min, max) %>%
+    mutate(var = str_sub(var, end=-2)) %>% 
+    mutate(var = ifelse(var=="sex*", "sex",ifelse(
+                           var=="concern_dev_exprssd_others*", "concern_dev_exprssd_others",var)))
+
+b <- data.frame(table(seldata_main$sex,seldata_main$bin_mot_18m)) %>% 
+  bind_rows(data.frame(table(seldata_main$sex,seldata_main$bin_lang_3yr)),
+            data.frame(table(seldata_main$sex,seldata_main$concern_dev_exprssd_others))) %>% 
+  rename(sex= Var1,yn = Var2) %>% 
+  mutate(var = rep(c("bin_mot_18m","bin_lang_3yr","concern_dev_exprssd_others"), each=4)) %>%
+  filter(yn==1)
+  
+a %>% full_join(b) %>% filter(var !="sex")%>% knitr::kable(caption = "Descriptives main", digits=3)
+
+# c <- describeBy(seldata_supp, group="sex", mat=TRUE) %>% 
+#   rownames_to_column() %>% 
+#   select(var= rowname, sex=group1, n, mean, sd,min, max) %>%
+#     mutate(var = str_sub(var, end=-2))
+#   
+# d <- data.frame(table(seldata_supp$sex,seldata_supp$evr_mot_delay)) %>% 
+#   bind_rows(data.frame(table(seldata_supp$sex,seldata_supp$evr_mot_spec)),
+#             data.frame(table(seldata_supp$sex,seldata_supp$evr_lang_delay)),
+#             data.frame(table(seldata_supp$sex,seldata_supp$evr_lang_spec))) %>% 
+#   rename(sex= Var1,yn = Var2) %>% 
+#   mutate(var = rep(c("evr_mot_delay","evr_mot_spec","evr_lang_delay","evr_lang_spec"), each=4)) %>%
+#   filter(yn==1)
+# 
+# c %>% full_join(d)%>% filter(var !="sex*") %>% knitr::kable(caption="Descriptives supp", digits=3)
+
+prs_corrs <- alldata %>%
+  filter(sex %in% c("Male","Female")) %>% 
+  filter(!is.na(IID)) %>% 
+  select(scz_X0.05_resid,adh_X0.05_resid,asd_X0.05_resid)
+
+e<- cor.test(prs_corrs$scz_X0.05_resid, prs_corrs$adh_X0.05_resid)
+f<- cor.test(prs_corrs$scz_X0.05_resid, prs_corrs$asd_X0.05_resid)
+g<- cor.test(prs_corrs$asd_X0.05_resid, prs_corrs$adh_X0.05_resid)
+
+cors <- rbind(c(e$estimate, e$conf.int),
+      c(f$estimate, f$conf.int),
+      c(g$estimate, g$conf.int)) %>% 
+  as.data.frame() %>% 
+  mutate(PGS = c("scz-adh","scz-asd","asd-adh"))
+
+colnames(cors)<- c("Cor","lci","uci","between")
+
+cors%>% knitr::kable(caption = "PGS cors", digits=3)
+
+```
+
+
+# Multiple testing
+```{r mtc}
+mtc <-read.table(file= "./output/estimates_corrected_pvals.txt", header=T,sep="\t")
+
+mtc%>% knitr::kable(caption = "MTC main", digits=3)
+
+
+```

@@ -1,0 +1,315 @@
+---
+title: "Developmental milestones in early childhood and genetic liability to neurodevelopmental disorders - online appendix"
+date: "`r format(Sys.time(), '%d %B, %Y')`"
+output: 
+  word_document:
+    reference_docx: mytemplate1.docx
+editor_options: 
+  chunk_output_type: console
+---
+
+```{r setup, include=FALSE}
+knitr::opts_chunk$set(echo = FALSE, message= FALSE)
+knitr::opts_knit$set(root.dir =  "N:/data/durable/projects/prs_dev_timing")
+library(tidyverse)
+library(psych)
+options(knitr.kable.NA = '')
+```
+
+
+
+# eMethods 1: Supplementary information about genetic data (including quality control)
+
+
+Approximately 17,000 trios from the Norwegian Mother, Father and Child cohort were genotyped in three batches. Genotypes were called using GenomeStudio (Illumina, San Diego, USA) and converted to PLINK format files. The first batch, comprising 20,664 individuals and 542,585 SNPs was genotyped at the Genomics Core Facility (Iceland) using the Illumina HumanCoreExome (Illumina, San Diego, USA) genotyping array, version 12 1.1. The second batch, comprising 12,874 individuals and 547,644 SNPs was genotyped at the Genomics Core Facility (Iceland) using the Illumina HumanCoreExome (Illumina, San Diego, USA) genotyping array, version24 1.0. The third batch, comprising 17,949 individuals and 692,367 SNPs, was genotyped at ERASMUS MC (the Netherlands) using the Illumina Global Screening Array (Illumina, San Diego, USA) version 24 1.
+
+PLINK version 1.90 beta 3.36 (http://pngu.mgh.harvard.edu/purcell/plink/) was used to conduct the quality control, which has previously been described by Helgeland et al (2019). Known problematic SNPs previously reported by the Cohorts for Heart and Aging Research in Genomic Epidemiology (CHARGE) consortium and Psychiatric Genomics Consortium (PGC) were excluded from each batch. Duplicate samples were removed, and each genotyping batch was split into parents and offspring. Quality control was then conducted by genotyping array in parents and offspring separately.
+
+Individuals were excluded if they had a genotyping call rate below 95% or autosomal heterozygosity greater than four standard deviations from the sample mean. SNPs were excluded if they were ambiguous (A / T and C / G), had a genotyping call rate below 98%, minor allele frequency of less than 1%, or Hardy-Weinberg equilibrium P-value less than 1 × 10-6. Population stratification was assessed, using the HapMap phase 3 release 3 as a reference, by principal component analysis using EIGENSTRAT version 6.1.4. Visual inspection identified a homogenous population of European ethnicity and individuals of non-European ethnicity were removed. Individuals with a genotyping call rate below 98% or autosomal heterozygosity greater than four standard deviations from the sample mean were then removed. A sex check was done by assessing the sex declared in the pedigree with the genetic sex, which was imputed based on the heterozygosity of chromosome X. When sex discrepancies were identified, the individual was flagged. Relatedness was assessed by flagging one individual from each pairwise comparison of identity-by-descent with a pi-hat greater than 0.1.
+
+The parents and offspring datasets were then merged into one dataset per genotyping batch; keeping only the SNPs that passed quality control in both datasets. All individuals passing the genotyping call rate and autosomal heterozygosity measures were included in the merged datasets. Therefore, the merged datasets included individuals previously excluded or flagged as a duplicate, ethnic outlier, having a sex discrepancy, or high level of relatedness. Concordance checks were then conducted on validated duplicates. Duplicate, tri-allelic and discordant (any discordance between the validated duplicates) SNPs were excluded. Individuals and SNPs with a genotyping call rate below 98% in the merged datasets were excluded. The duplicate sample that was removed before the start of the quality control was then excluded. Mendelian errors identified by the assessment of duos and trios were then recoded to missing. Insertions and deletions were also excluded.
+
+After QC the Human Core Exome 12 batch comprised 20,231 individuals and 384,855 SNPs, the Human Core Exome 24 batch comprised 12,757 individuals and 396,189 SNPs, and the Global Screening Array batch comprised 17,742 individuals and 568,275 SNPs. Phasing was conducted using Shapeit 2 release 837 and the duoHMM approach was used to account for the pedigree structure. Imputation was conducted using the Haplotype reference consortium (HRC) release 1-1 as the genetic reference panel. The Sanger Imputation Server was used to perform the imputation with the Positional Burrows-Wheeler Transform (PBWT). The phasing and imputation were conducted separately for each genotyping batch. 
+
+Post imputation quality control was performed by initially converting the dosages to best-guess genotypes. Individuals were removed if they had a genotyping call rate less than 99% or were of non-European ethnicity. SNPs with an imputation INFO quality score less than 0.8, genotyping call rate less than 98%, minor allele frequency less than 1%, or a Hardy-Weinberg equilibrium P-value less than 1 × 10-6 were removed. After quality control, a core homogeneous sample of European ethnicity (based on PCA of markers overlapping with available HapMap markers), unrelated (within generation, defined as accumulated identity-by-descent <0.015 and overall identity-by-descent PI_HAT <10%) individuals across all batches and arrays were available for use in analysis (Nchildren = 15,208; Nmothers = 14,804; Nfathers = 15,198).
+
+References
+
+Helgeland, Ø., Vaudel, M., Juliusson, P.B. et al. Genome-wide association study reveals dynamic role of genetic variation in infant and early childhood growth. Nat Commun 10, 4448 (2019). https://doi.org/10.1038/s41467-019-12308-0. 
+
+
+
+# eMethods 2: Supplementary information about polygenic scoring
+
+
+Polygenic scores were calculated using the following parameters (set via the relevant flags in the PRSice software):
+
+-Clumping parameters: window size = 500kb; p-value threshold = 1; r2 threshold= 0.10
+
+-INFO score threshold (for SNPs in original GWAS): 0.9
+
+-Minor allele frequency threshold (for SNPs in original GWAS; available for schizophrenia only): 0.05 
+
+-Exclusion of MHC region specified at chr6:25000000-34000000
+
+
+
+# eTable 1.  Number of SNPs included in polygenic scores at each threshold 
+
+
+```{r snps, echo = FALSE, fig.align='center'}
+
+scz <- read.table("./data/prs_for_analyses/prs_metadata/scz.prsice", header=T) %>%  mutate(pheno="scz")
+adhd <- read.table("./data/prs_for_analyses/prs_metadata/adhd.prsice", header=T)  %>%  mutate(pheno="adhd")
+asd <- read.table("./data/prs_for_analyses/prs_metadata/asd.prsice", header=T)  %>%  mutate(pheno="asd")
+
+adhd %>% 
+  bind_rows(asd) %>% 
+  bind_rows(scz) %>% 
+  filter(Threshold %in% c(0.001,0.01,0.05,0.1,0.5,1)) %>% 
+  select(PGS = pheno,Threshold,Num_SNP) %>% 
+  mutate(Threshold = as.character(Threshold)) %>% 
+  knitr::kable(caption="", align = "c")
+```
+
+
+
+# eTable 2.  Selection effects in genotyped sample: continuous variables 
+
+
+```{r sel_cont, echo = FALSE, fig.align='center'}
+load(file = "./output/selection.RData")
+
+selection_cont %>% 
+  mutate(diff= mean_nogeno-mean_geno) %>% 
+  select(Variable = var, sex, mean_Geno=mean_geno, mean_noGeno=mean_nogeno,diff, lower.ci=lci,upper.ci=uci, pval)%>%  
+  mutate(pval = ifelse(pval<0.001, "<0.001", sprintf("%.3f", round(pval,3))))%>%
+  arrange(Variable,sex) %>% 
+  knitr::kable(caption="", align = "c", digits=3)
+```
+
+# eTable 3.  Selection effects in genotyped sample: binary variables 
+
+```{r sel_bin, echo = FALSE, fig.align='center'}
+selection_proportions %>% 
+  select(Variable = pheno, sex, prop_Geno, prop_noGeno,diff_prop, lower.ci,upper.ci, pval)%>% 
+  mutate(pval = ifelse(pval<0.001, "<0.001", sprintf("%.3f", round(pval,3))))%>% 
+  arrange(rev(Variable),sex) %>%knitr::kable(caption="", align = "c", digits=3)
+```
+
+
+# eTable 4.  Selective attrition testing results 
+
+
+```{r sel_att, echo = FALSE, fig.align='center'}
+
+ selective_attrition %>% 
+    mutate(diff= mean_nodata-mean_data,
+           var = str_replace(var,"_prs","")) %>% 
+    select(PGS = var, wave, mean_data, mean_nodata,diff, lower.ci=lci,upper.ci=uci, pval)%>% 
+  mutate(pval = ifelse(pval<0.001, "<0.001", sprintf("%.3f", round(pval,3))))%>%
+    arrange(PGS,wave) %>%knitr::kable(caption="", align = "c", digits=3) 
+```
+
+
+# eTable 5.  Model fitting results for motor development analyses 
+
+
+```{r mod_fit_mot, echo = FALSE, fig.align='center'}
+#load( file = './scratch_data/continuous_analyses_estimates.RData')
+load( file = "./scratch_data/continuous_analyses_fitcomps.RData")
+
+fitcomps_mot <- fitcomps_out %>% 
+  filter(str_detect(score,"X0.001|X0.01|X0.05|X0.1|X0.5|X1_"),
+         var=="age_1st_wlk",
+         model %in% c("sex_diff", "fixed_beta")) %>% 
+  mutate(score=str_remove(score,"_resid")) %>% 
+  separate(score, into=c("PGS", "Threshold"), sep = "_X") %>% 
+  select(Variable=var, PGS, Threshold,model,AIC,`Chisq diff`,`Df diff`, pLRT)%>% 
+  mutate(pLRT = ifelse(pLRT<0.001, "<0.001", sprintf("%.3f", round(pLRT,3))))
+
+#load( file = './scratch_data/dichotomous_analyses_estimates.RData')
+load( file = './scratch_data/dichotomous_analyses_fitcomps.RData')
+fitcomps_mot2 <- fitcomps_out %>% 
+  filter(str_detect(score,"X0.001|X0.01|X0.05|X0.1|X0.5|X1_"),
+         var=="bin_mot_18m") %>% 
+  mutate(score=str_remove(score,"_resid"),
+         AIC=NA) %>% 
+  separate(score, into=c("PGS", "Threshold"), sep = "_X") %>% 
+  select(Variable=var, PGS, Threshold,model,AIC,`Chisq diff`,`Df diff`, pLRT)%>% 
+  mutate(pLRT = ifelse(pLRT<0.001, "<0.001", sprintf("%.3f", round(pLRT,3))))
+
+
+ fitcomps_mot %>% 
+  bind_rows(fitcomps_mot2)%>% 
+   mutate(model= str_replace(model, "sex_diff","Sex diffs"),
+          model= str_replace(model, "fixed_beta","Constrained"))%>%
+  knitr::kable(caption="", align = "c", digits=3)
+```
+
+Notes:
+AIC (Akaike's Information Criterion) not available for probit regression models;
+pLRT = raw p value from likelihood ratio test of sex constrained versus sex difference models;
+
+# eTable 6.  Model fitting results for language development analyses 
+
+
+```{r mod_fit_lang, echo = FALSE, fig.align='center'}
+#load( file = './scratch_data/continuous_analyses_estimates.RData')
+load( file = "./scratch_data/continuous_analyses_fitcomps.RData")
+
+fitcomps_lng <- fitcomps_out %>% 
+  filter(str_detect(score,"X0.001|X0.01|X0.05|X0.1|X0.5|X1_"),
+         var%in%c("age_1st_wds","age_1st_sns","diff_1st_wds_sns"),
+         model %in% c("sex_diff", "fixed_beta")) %>% 
+  mutate(score=str_remove(score,"_resid")) %>% 
+  separate(score, into=c("PGS", "Threshold"), sep = "_X") %>% 
+  select(Variable=var, PGS,Threshold,model,AIC,`Chisq diff`,`Df diff`, pLRT)%>% 
+  mutate(pLRT = ifelse(pLRT<0.001, "<0.001", sprintf("%.3f", round(pLRT,3))))
+#load( file = './scratch_data/dichotomous_analyses_estimates.RData')
+load( file = './scratch_data/dichotomous_analyses_fitcomps.RData')
+fitcomps_lng2 <- fitcomps_out %>% 
+  filter(str_detect(score,"X0.001|X0.01|X0.05|X0.1|X0.5|X1_"),
+         var=="bin_lang_3yr") %>% 
+  mutate(score=str_remove(score,"_resid"),
+         AIC=NA) %>% 
+  separate(score, into=c("PGS", "Threshold"), sep = "_X") %>% 
+  select(Variable=var, PGS, Threshold,model,AIC,`Chisq diff`,`Df diff`, pLRT) %>% 
+  mutate(pLRT = ifelse(pLRT<0.001, "<0.001", sprintf("%.3f", round(pLRT,3))))
+
+fitcomps_lng %>% 
+  bind_rows(fitcomps_lng2)%>% 
+   mutate(model= str_replace(model, "sex_diff","Sex diffs"),
+          model= str_replace(model, "fixed_beta","Constrained"))%>%
+  knitr::kable(caption="", align = "c", digits=3)
+```
+
+Notes:
+AIC (Akaike's Information Criterion) not available for probit regression models;
+pLRT = raw p value from likelihood ratio test of sex constrained versus sex difference models;
+
+
+# eTable 7.  Model fitting results for concern about development analyses 
+
+```{r modfit_conc, echo = FALSE, fig.align='center'}
+load( file = './scratch_data/dichotomous_analyses_fitcomps.RData')
+fitcomps_lng2 <- fitcomps_out %>% 
+  filter(str_detect(score,"X0.001|X0.01|X0.05|X0.1|X0.5|X1_"),
+         var=="concern_dev_exprssd_others") %>% 
+  mutate(score=str_remove(score,"_resid"),
+         AIC=NA) %>% 
+  separate(score, into=c("PGS", "Threshold"), sep = "_X") %>% 
+  select(Variable=var, PGS, Threshold,model,AIC,`Chisq diff`,`Df diff`, pLRT)%>% 
+  mutate(pLRT = ifelse(pLRT<0.001, "<0.001", sprintf("%.3f", round(pLRT,3))))
+
+
+fitcomps_lng2 %>%  
+  mutate(model= str_replace(model, "sex_diff","Sex diffs"),
+         model= str_replace(model, "fixed_beta","Constrained"),
+         Variable= str_replace(Variable,"concern_dev_exprssd_others","Concern"))%>%
+  select(-AIC) %>% 
+  knitr::kable(caption="", align = "c", digits=3)
+```
+
+Notes:
+pLRT = raw p value from likelihood ratio test of sex constrained versus sex difference models;
+
+# eTable 8.  R-squared values for all models at most predictive PGS threshold
+
+```{r et8, echo = FALSE, fig.align='center'}
+load(file = "./scratch_data/continuous_analyses_fitcomps.RData")
+rsqs_bysex_cont <- rsqs_bysex %>% 
+  select(score, var,group,model, Rsq=estimate)
+load(file = "./scratch_data/dichotomous_analyses_fitcomps.RData")
+rsqs_bysex_bin <- rsqs_bysex%>% 
+  select(score, var,group,model, Rsq=estimate)
+
+rsqs <- rsqs_bysex_cont %>% 
+  bind_rows(rsqs_bysex_bin) %>% 
+  mutate(score=str_remove(score, "_resid"),
+         model=ifelse(model=="sex_diff", "Sex diffs","Constrained")) %>% 
+  separate(score, into=c("PGS", "Threshold"), sep = "_X") %>% 
+  select(PGS,Threshold,Variable=var,sex=group,model, Rsq )
+
+rsqs %>%  
+  knitr::kable(caption="", align = "c", digits=5)
+
+```
+
+
+# eTable 9.  Sensitvity analysis: neurodevelopmental PGS and referrals for developmental problems 
+
+```{r sens1, echo = FALSE, fig.align='center'}
+
+load(file="./scratch_data/sens_analyses_ests_pre_mtc.RData")
+
+pgs_spec_out <- ests3_tab %>% 
+  select(score, var, model,sex, est.std, ci.lower,ci.upper,pvalue) %>% 
+  filter(str_detect(var, "spec")) %>% 
+  mutate(score=str_remove(score,"_resid")) %>% 
+  separate(score, into=c("PGS", "threshold"), sep = "_X") %>% 
+  rename(Outcome=var, raw_Pval=pvalue,Beta = est.std) %>% 
+  mutate(model = str_replace(model,"fixed_beta", "No sex diffs"),
+         Outcome = str_replace(Outcome,"_spec", ""),
+         raw_Pval = ifelse(raw_Pval<0.001, "<0.001", sprintf("%.3f", round(raw_Pval,3)))) 
+  
+pgs_spec_out %>%  
+  knitr::kable(caption="", align = "c", digits=3)
+```
+
+Notes: 
+'Beta' is standardized beta from probit regression model; 
+'Outcome' is maternal report of specialist referral for ADHD/autism/language/motor problems by age 8;
+
+
+# eTable 10.  Sensitvity analysis: continuous "age at first..." variables and referrals for developmental problems 
+
+```{r sens2, echo = FALSE, fig.align='center'}
+load("./scratch_data/sens2_glms_fitted.RData")
+
+est_fra_best <- est_fra_best %>% 
+  ungroup() %>% 
+  mutate(Outcome = str_replace(Outcome,"_spec", ""),
+         raw_Pval = ifelse(raw_Pval<0.001, "<0.001", sprintf("%.3f", round(raw_Pval,3))))
+
+est_fra_best %>%  
+  knitr::kable(caption="", align = "c", digits=3)
+```
+
+Notes: 
+'Beta' is standardized beta from probit regression model; 
+'Outcome' is maternal report of specialist referral for ADHD/autism/language/motor problems by age 8;
+
+
+# eTable 11.  Sensitivity analysis: neurodevelopmental PGS and probability of being a "late walker/talker" 
+
+```{r sens3, echo = FALSE, fig.align='center'}
+
+load(file="./scratch_data/sens_analyses_ests_pre_mtc.RData")
+
+pgs_late_out <- ests3_tab %>% 
+  select(score, var, model,sex, est.std, ci.lower,ci.upper,pvalue) %>% 
+  filter(str_detect(var, "late")) %>% 
+  mutate(score=str_remove(score,"_resid")) %>% 
+  separate(score, into=c("PGS", "threshold"), sep = "_X") %>% 
+  rename(Outcome=var, raw_Pval=pvalue,Beta = est.std) %>% 
+  mutate(model = str_replace(model,"fixed_beta", "No sex diffs"),
+         model = str_replace(model,"sex_diff", "Sex diffs"),
+         Outcome = str_replace(Outcome,"_spec", ""),
+         raw_Pval = ifelse(raw_Pval<0.001, "<0.001", sprintf("%.3f", round(raw_Pval,3)))) 
+  
+pgs_late_out %>%  
+  knitr::kable(caption="", align = "c", digits=3)
+```
+
+Notes: 
+'Beta' is standardized beta from probit regression model; 
+'Outcome' is a binary variable indicating whether age at first... >= 97th percentile)
+
+
+
+
+
+
+
+
